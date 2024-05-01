@@ -69,13 +69,17 @@ gpu_id = args.gpu_id
 
 
 
-with mgzip.open('./data/' + dataset_name + '_' + dataset_state + '.pkl', 'rb') as f:
-    ori_data = pickle.load(f)
+ori_data = np.load('./data/' + dataset_name + '_test.npz')
+try:
+    ori_data = ori_data['data']
+except:
+    ori_data = ori_data['arr_0']
 
-
-with mgzip.open('./data/' + method_name + '/' + dataset_name + '_' + dataset_state + '_gen.pkl', 'rb') as f:
-    generated_data = pickle.load(f)
-generated_data = np.array(generated_data)
+generated_data = np.load('./data/' + method_name + '/model_selection/' + dataset_name + '_' + dataset_state + '_test_gen.npz')
+try:
+    generated_data = generated_data['data']
+except:
+    generated_data = generated_data['arr_0']
 
 print(ori_data.shape, generated_data.shape)
 x_train = ori_data
@@ -114,6 +118,6 @@ for i in range(5):
     
 
 
-with open('../data/' + method_name + '/' + dataset_name + '_' + dataset_state + '_fid.pkl', 'wb') as f:
+with open('./data/' + method_name + '/model_selection/outputs/' + dataset_name + '_' + dataset_state + '_test_fid.pkl', 'wb') as f:
     pickle.dump(np.array(fid_s), f)
 

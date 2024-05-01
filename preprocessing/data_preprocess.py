@@ -7,6 +7,10 @@ from tslearn.datasets import UCR_UEA_datasets
 import pickle
 import mgzip
 
+dataset_name = 'custom_sines'
+model = 'timeVAE'
+user = 'wfg874'
+
 
 class MinMaxScaler():
     def fit_transform(self, data): 
@@ -52,43 +56,50 @@ def find_length(data):
 
 # ===============================
 # load from csv file
-ori_data = np.loadtxt('./DATASET_NAME.csv', delimiter = ",",skiprows = 1)
-print(ori_data.shape)
+#ori_data = np.loadtxt('./DATASET_NAME.csv', delimiter = ",",skiprows = 1)
+#print(ori_data.shape)
 # ===============================
 # load from pickle file
-with mgzip.open('./DATASET_NAME.pkl', 'rb') as f:
-    ori_data = pickle.load(f)
-ori_data.shape
+#with mgzip.open('./DATASET_NAME.pkl', 'rb') as f:
+#    ori_data = pickle.load(f)
+#ori_data.shape
 # ===============================
 # load from existing datasets in UCR/UEA
-X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset("DATASET_NAME")
-X_train = X_train.reshape(X_train.shape[1], X_train.shape[0])
-ori_data = X_train.copy()
-print(ori_data.shape)
-for i in range(ori_data.shape[1]):
-    ori_data[:,i] = pd.Series(ori_data[:,i]).interpolate().values
+#X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset("DATASET_NAME")
+#X_train = X_train.reshape(X_train.shape[1], X_train.shape[0])
+#ori_data = X_train.copy()
+#print(ori_data.shape)
+#for i in range(ori_data.shape[1]):
+#    ori_data[:,i] = pd.Series(ori_data[:,i]).interpolate().values
+# ===============================
+# load from npz file
+ori_data = np.load('/home/' + user + '/mnt/remote/repos/TSGBench/data/' + dataset_name + '.npz')
+ori_data = ori_data['data']
+data = []
+for sample in ori_data:
+    data.append(sample)
 # ===============================
 
-window_all = []
-for i in range(ori_data.shape[1]):
-    window_all.append(find_length(ori_data[:,i]))
+#window_all = []
+#for i in range(ori_data.shape[1]):
+#    window_all.append(find_length(ori_data[:,i]))
 
-seq_len = int(np.mean(np.array(window_all)))
-print(seq_len)
+#seq_len = int(np.mean(np.array(window_all)))
+#print(seq_len)
 
 
 # Preprocess the dataset
-temp_data = []    
+#temp_data = []    
 # Cut data by sequence length
-for i in range(0, len(ori_data) - seq_len):
-    _x = ori_data[i:i + seq_len]
-    temp_data.append(_x)
+#for i in range(0, len(ori_data) - seq_len):
+#    _x = ori_data[i:i + seq_len]
+#    temp_data.append(_x)
     
 # Mix the datasets (to make it similar to i.i.d)
-idx = np.random.permutation(len(temp_data))    
-data = []
-for i in range(len(temp_data)):
-    data.append(temp_data[idx[i]])
+#idx = np.random.permutation(len(temp_data))    
+#data = []
+#for i in range(len(temp_data)):
+#    data.append(temp_data[idx[i]])
 
 
 full_train_data = np.array(data)
@@ -113,14 +124,24 @@ scaler = MinMaxScaler()
 scaled_train_data = scaler.fit_transform(train_data)
 scaled_valid_data = scaler.transform(valid_data)
 
+# save data in TSGBench
+np.savez('/home/' + user + '/mnt/remote/repos/TSGBench/data/' + dataset_name + '_train.npz', train_data)
+np.savez('/home/' + user + '/mnt/remote/repos/TSGBench/data/' + dataset_name + '_valid.npz', valid_data)
+np.savez('/home/' + user + '/mnt/remote/repos/TSGBench/data/' + dataset_name + '_scaler.npz', scaler)
+
+# save data in timeVAE
+if model == 'timeVAE':
+    np.savez('/home/' + user + '/mnt/remote/repos/timeVAE/datasets/' + dataset_name + '_train.npz', train_data)
+    np.savez('/home/' + user + '/mnt/remote/repos/timeVAE/datasets/' + dataset_name + '_valid.npz', train_data)
+
 
 # Store the preprocessed dataset
-dataset_name = 'DATASET_NAME'
-with mgzip.open('./data/' + dataset_name + '_train.pkl', 'wb') as f:
-    pickle.dump(scaled_train_data, f)
+#dataset_name = 'DATASET_NAME'
+#with mgzip.open('./data/' + dataset_name + '_train.pkl', 'wb') as f:
+#    pickle.dump(scaled_train_data, f)
 
-with mgzip.open('./data/' + dataset_name + '_valid.pkl', 'wb') as f:
-    pickle.dump(scaled_valid_data, f)
+#with mgzip.open('./data/' + dataset_name + '_valid.pkl', 'wb') as f:
+#    pickle.dump(scaled_valid_data, f)
 
-with mgzip.open('./data/' + dataset_name + '_scaler.pkl', 'wb') as f:
-    pickle.dump(scaler, f)
+#with mgzip.open('./data/' + dataset_name + '_scaler.pkl', 'wb') as f:
+#    pickle.dump(scaler, f)

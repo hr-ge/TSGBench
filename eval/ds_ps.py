@@ -337,14 +337,18 @@ gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction)
 sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
 
+ori_data = np.load('./data/' + dataset_name + '_test.npz')
+try:
+    ori_data = ori_data['data']
+except:
+    ori_data = ori_data['arr_0']
 
-with mgzip.open('./data/' + dataset_name + '_' + dataset_state + '.pkl', 'rb') as f:
-	ori_data = pickle.load(f)
+generated_data = np.load('./data/' + method_name + '/model_selection/' + dataset_name + '_' + dataset_state + '_test_gen.npz')
+try:
+    generated_data = generated_data['data']
+except:
+    generated_data = generated_data['arr_0']
 
-
-with mgzip.open('./data/' + method_name + '/' + dataset_name + '_' + dataset_state + '_gen.pkl', 'rb') as f:
-	generated_data = pickle.load(f)
-generated_data = np.array(generated_data)
 
 print(ori_data.shape, generated_data.shape)
 
@@ -375,5 +379,5 @@ disc_all = np.array(disc_all)
 pred_all = np.array(pred_all)
 time_all = np.array(time_all)
 
-with open('../data/' + method_name + '/' + dataset_name + '_' + dataset_state + '_eval_model.pkl', 'wb') as f:
+with open('./data/' + method_name + '/model_selection/outputs/' + dataset_name + '_' + dataset_state + '_test_eval_model.pkl', 'wb') as f:
     pickle.dump([disc_all, pred_all, time_all], f)

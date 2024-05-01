@@ -256,13 +256,19 @@ os.environ["CUDA_AVAILABLE_DEVICES"] = gpu_id
 
 
 
-with mgzip.open('./data/' + dataset_name + '_' + dataset_state + '.pkl', 'rb') as f:
-    ori_data = pickle.load(f)
+ori_data = np.load('./data/' + dataset_name + '_test.npz')
+# ori_data = np.load('./data/' + dataset_name + '_valid.npz')
+try:
+    ori_data = ori_data['data']
+except:
+    ori_data = ori_data['arr_0']
 
-
-with mgzip.open('./data/' + method_name + '/' + dataset_name + '_' + dataset_state + '_gen.pkl', 'rb') as f:
-    generated_data = pickle.load(f)
-generated_data = np.array(generated_data)
+generated_data = np.load('./data/' + method_name + '/model_selection/' + dataset_name + '_' + dataset_state + '_test_gen.npz')
+# generated_data = np.load('./data/' + method_name + '/grid_search/' + dataset_name + '_' + dataset_state + '_gen.npz')
+try:
+    generated_data = generated_data['data']
+except:
+    generated_data = generated_data['arr_0']
 
 print(ori_data.shape, generated_data.shape)
 x_real = torch.Tensor(ori_data)
@@ -324,12 +330,12 @@ for i in range(n_samples):
 distance_dtw = np.array(distance_dtw)
 average_distance_dtw = distance_dtw.mean()
 
-
-with open('../data/' + method_name + '/' + dataset_name + '_' + dataset_state + '_eval_feature.pkl', 'wb') as f:
+with open('./data/' + method_name + '/model_selection/outputs/' + dataset_name + '_' + dataset_state + '_test_eval_feature.pkl', 'wb') as f:
+# with open('./data/' + method_name + '/grid_search/' + dataset_name + '_' + dataset_state + '_eval_feature.pkl', 'wb') as f:
     pickle.dump([mdd_all, acd_all, sd, kd], f)
 
-
-with open('../data/' + method_name + '/' + dataset_name + '_' + dataset_state + '_eval_distance.pkl', 'wb') as f:
+with open('./data/' + method_name + '/model_selection/outputs/' + dataset_name + '_' + dataset_state + '_test_eval_distance.pkl', 'wb') as f:
+# with open('./data/' + method_name + '/grid_search/' + dataset_name + '_' + dataset_state + '_eval_distance.pkl', 'wb') as f:
     pickle.dump([average_distance_eu, average_distance_dtw], f)
 
 
